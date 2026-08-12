@@ -2,7 +2,7 @@
   "name": "小红书内容工作台",
   "short_name": "工作台",
   "description": "INFJ视角的小红书内容创作管理平台",
-  "start_url": "./小红书内容工作台-手机版.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F5F5F7",
   "theme_color": "#E8654E",
