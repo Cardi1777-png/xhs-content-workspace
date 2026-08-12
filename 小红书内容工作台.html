@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>小红书内容工作台</title>
+<style>
+/* ===== CSS Variables ===== */
+:root{
+  --c-primary:#E8654E;
+  --c-primary-light:#FFF0EC;
+  --c-secondary:#6C5CE7;
+  --c-secondary-light:#EEEAFE;
+  --c-success:#00B894;
+  --c-success-light:#E0F8F4;
+  --c-warning:#FDCB6E;
+  --c-warning-light:#FFF5E0;
+  --c-danger:#E74C3C;
+  --c-danger-light:#FDEAE8;
+  --c-bg:#F5F5F7;
+  --c-card:#FFFFFF;
+  --c-text:#2D3436;
+  --c-text-sec:#636E72;
+  --c-text-light:#B2BEC3;
+  --c-border:#E3E8EB;
+  --c-border-light:#F0F3F5;
+  --radius:12px;
+  --radius-sm:8px;
+  --shadow:0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lg:0 8px 30px rgba(0,0,0,0.12);
+}
+/* ===== Reset ===== */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:inherit}
+input,select,textarea{font-family:inherit;font-size:16px}
+a{color:var(--c-secondary);text-decoration:none}
+/* ===== Layout ===== */
+.app{max-width:960px;margin:0 auto;padding-bottom:80px}
+/* ===== Header ===== */
+.header{background:var(--c-card);padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--c-border)}
+.header-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.header-title{font-size:20px;font-weight:700;color:var(--c-text);display:flex;align-items:center;gap:8px}
+.header-title svg{width:24px;height:24px;flex-shrink:0}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:4px;padding:8px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;transition:all .2s;white-space:nowrap;min-height:36px}
+.btn svg{width:16px;height:16px;flex-shrink:0}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:#d4553f}
+.btn-outline{border:1px solid var(--c-border);color:var(--c-text-sec);background:var(--c-card)}
+.btn-outline:hover{border-color:var(--c-primary);color:var(--c-primary)}
+.btn-secondary{background:var(--c-secondary);color:#fff}
+.btn-secondary:hover{background:#5b4dd6}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-ghost{color:var(--c-text-sec);padding:4px 8px;min-height:32px}
+.btn-ghost:hover{color:var(--c-primary)}
+.btn-sm{padding:4px 10px;font-size:12px;min-height:30px}
+/* ===== Today Section ===== */
+.today-section{background:var(--c-card);margin:12px 16px;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.today-header{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:700;margin-bottom:10px;color:var(--c-text)}
+.today-header svg{width:18px;height:18px;color:var(--c-primary)}
+.today-list{display:flex;flex-direction:column;gap:8px}
+.today-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--c-bg);transition:background .2s}
+.today-item:hover{background:var(--c-border-light)}
+.today-item.overdue{background:var(--c-danger-light)}
+.today-item.today{background:var(--c-warning-light)}
+.today-item.upcoming{background:var(--c-secondary-light)}
+.today-tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.today-tag.overdue{background:var(--c-danger);color:#fff}
+.today-tag.today{background:var(--c-warning);color:#5a4500}
+.today-tag.upcoming{background:var(--c-secondary);color:#fff}
+.today-text{font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.today-empty{font-size:13px;color:var(--c-text-light);padding:8px 0;text-align:center}
+/* ===== Tab Nav ===== */
+.tab-nav{display:flex;background:var(--c-card);margin:0 16px;border-radius:var(--radius);padding:4px;gap:4px;box-shadow:var(--shadow);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab-btn{flex:1;min-width:60px;padding:10px 8px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--c-text-sec);transition:all .2s;text-align:center;white-space:nowrap;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab-btn svg{width:20px;height:20px}
+.tab-btn.active{background:var(--c-primary);color:#fff}
+.tab-btn .tab-badge{font-size:10px;background:var(--c-danger);color:#fff;border-radius:8px;padding:0 5px;min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center}
+.tab-btn.active .tab-badge{background:rgba(255,255,255,0.3)}
+/* ===== Tab Panels ===== */
+.tab-panel{display:none;padding:12px 16px}
+.tab-panel.active{display:block}
+/* ===== Cards ===== */
+.card{background:var(--c-card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.card-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
+.card-title svg{width:18px;height:18px;color:var(--c-primary)}
+.card-subtitle{font-size:12px;color:var(--c-text-light);margin-top:2px}
+/* ===== Module A: Topics ===== */
+.topic-card{background:var(--c-card);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);border-left:4px solid var(--c-border);transition:all .2s}
+.topic-card.selected{border-left-color:var(--c-success)}
+.topic-card.published{border-left-color:var(--c-text-light);opacity:.6}
+.topic-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.topic-title{font-size:15px;font-weight:600;flex:1;line-height:1.4}
+.topic-category{font-size:11px;padding:2px 8px;border-radius:4px;white-space:nowrap;font-weight:500}
+.cat-emo{background:var(--c-primary-light);color:var(--c-primary)}
+.cat-infj{background:var(--c-secondary-light);color:var(--c-secondary)}
+.cat-cat{background:var(--c-warning-light);color:#8a6d00}
+.cat-psych{background:var(--c-success-light);color:var(--c-success)}
+.cat-hot{background:var(--c-danger-light);color:var(--c-danger)}
+.topic-scores{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.score-item{text-align:center}
+.score-label{font-size:10px;color:var(--c-text-light);margin-bottom:2px}
+.score-bar{height:6px;background:var(--c-bg);border-radius:3px;overflow:hidden;margin-bottom:2px}
+.score-fill{height:100%;border-radius:3px;transition:width .3s}
+.score-fill.heat{background:var(--c-primary)}
+.score-fill.rel{background:var(--c-secondary)}
+.score-fill.reso{background:var(--c-warning)}
+.score-fill.pot{background:var(--c-success)}
+.score-val{font-size:12px;font-weight:600}
+.topic-total{display:flex;align-items:center;gap:8px;margin-top:6px}
+.total-score{font-size:20px;font-weight:700;color:var(--c-text)}
+.total-label{font-size:11px;color:var(--c-text-light)}
+.topic-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.topic-dedup{font-size:11px;color:var(--c-warning);margin-top:4px;display:flex;align-items:center;gap:4px}
+.topic-dedup svg{width:14px;height:14px}
+/* ===== Forms ===== */
+.form-group{margin-bottom:12px}
+.form-label{font-size:13px;font-weight:600;color:var(--c-text-sec);margin-bottom:4px;display:block}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 12px;border:1px solid var(--c-border);border-radius:var(--radius-sm);background:var(--c-card);color:var(--c-text);transition:border-color .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--c-primary)}
+.form-textarea{resize:vertical;min-height:60px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row-4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.score-input{text-align:center;font-weight:600}
+.score-input-label{font-size:10px;color:var(--c-text-light);text-align:center;margin-bottom:2px}
+/* ===== Modal ===== */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:1000;justify-content:center;align-items:flex-start;padding:20px;overflow-y:auto}
+.modal-overlay.show{display:flex}
+.modal{background:var(--c-card);border-radius:var(--radius);width:100%;max-width:500px;padding:20px;box-shadow:var(--shadow-lg);margin:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-size:18px;font-weight:700}
+.modal-close{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:var(--c-text-sec)}
+.modal-close:hover{background:var(--c-bg);color:var(--c-text)}
+.modal-body{max-height:60vh;overflow-y:auto}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+/* ===== Module B: Hotspots ===== */
+.hotspot-card{background:var(--c-card);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);border-left:4px solid var(--c-danger)}
+.hotspot-card.kept{border-left-color:var(--c-success)}
+.hotspot-card.discarded{border-left-color:var(--c-text-light);opacity:.55}
+.hotspot-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.hotspot-fit{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.fit-item{text-align:center}
+.fit-bar{height:6px;background:var(--c-bg);border-radius:3px;overflow:hidden;margin-bottom:2px}
+.fit-fill{height:100%;border-radius:3px}
+.fit-fill.infj{background:var(--c-secondary)}
+.fit-fill.emo{background:var(--c-primary)}
+.fit-fill.cat{background:var(--c-warning)}
+.fit-fill.psy{background:var(--c-success)}
+.fit-val{font-size:12px;font-weight:600}
+.fit-label{font-size:10px;color:var(--c-text-light)}
+.hotspot-detail{font-size:13px;color:var(--c-text-sec);margin-top:6px;line-height:1.5}
+.hotspot-detail strong{color:var(--c-text)}
+.hotspot-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+/* ===== Module C: Content ===== */
+.content-card{background:var(--c-card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.content-status{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500}
+.status-draft{background:var(--c-warning-light);color:#8a6d00}
+.status-scheduled{background:var(--c-secondary-light);color:var(--c-secondary)}
+.status-published{background:var(--c-success-light);color:var(--c-success)}
+.content-title{font-size:16px;font-weight:700;margin:8px 0}
+.content-section{margin-top:12px;padding-top:12px;border-top:1px solid var(--c-border-light)}
+.content-section-title{font-size:13px;font-weight:700;color:var(--c-text-sec);margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.content-section-title svg{width:14px;height:14px;color:var(--c-primary)}
+.content-body{font-size:14px;line-height:1.7;white-space:pre-wrap;color:var(--c-text);background:var(--c-bg);padding:12px;border-radius:var(--radius-sm)}
+.content-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.tag{font-size:12px;padding:2px 8px;border-radius:4px;background:var(--c-secondary-light);color:var(--c-secondary)}
+.title-option{font-size:14px;padding:8px 10px;border-radius:var(--radius-sm);background:var(--c-bg);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.title-option.recommended{background:var(--c-primary-light);border:1px solid var(--c-primary)}
+.title-option .badge{font-size:10px;padding:1px 6px;border-radius:3px;font-weight:600}
+.title-option .badge.rec{background:var(--c-primary);color:#fff}
+.title-option .badge.alt{background:var(--c-text-light);color:#fff}
+.image-plan{display:flex;flex-direction:column;gap:4px}
+.image-item{font-size:13px;padding:6px 10px;background:var(--c-bg);border-radius:var(--radius-sm);display:flex;gap:6px}
+.image-num{font-weight:700;color:var(--c-primary);flex-shrink:0}
+/* ===== Module D: Data ===== */
+.data-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.data-table{width:100%;border-collapse:collapse;font-size:12px;min-width:680px}
+.data-table th{background:var(--c-bg);padding:8px 6px;text-align:left;font-weight:600;color:var(--c-text-sec);white-space:nowrap;position:sticky;top:0}
+.data-table td{padding:8px 6px;border-bottom:1px solid var(--c-border-light);white-space:nowrap}
+.data-table tr:hover{background:var(--c-bg)}
+.metric-good{color:var(--c-success);font-weight:600}
+.metric-mid{color:var(--c-warning);font-weight:600}
+.metric-low{color:var(--c-text-light)}
+.data-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:12px}
+.summary-card{background:var(--c-card);border-radius:var(--radius-sm);padding:12px;text-align:center;box-shadow:var(--shadow)}
+.summary-val{font-size:22px;font-weight:700;color:var(--c-text)}
+.summary-label{font-size:11px;color:var(--c-text-light);margin-top:2px}
+.chart-wrap{background:var(--c-card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.chart-title{font-size:14px;font-weight:600;margin-bottom:8px}
+.analysis-item{font-size:13px;padding:8px 12px;background:var(--c-bg);border-radius:var(--radius-sm);margin-bottom:6px;display:flex;gap:6px;align-items:flex-start}
+.analysis-item svg{width:16px;height:16px;flex-shrink:0;margin-top:2px;color:var(--c-primary)}
+.analysis-item strong{color:var(--c-text)}
+/* ===== Settings ===== */
+.setting-item{margin-bottom:16px}
+.setting-textarea{width:100%;min-height:80px;padding:10px 12px;border:1px solid var(--c-border);border-radius:var(--radius-sm);background:var(--c-card);font-size:14px;line-height:1.6;resize:vertical}
+.setting-textarea:focus{outline:none;border-color:var(--c-primary)}
+.account-preview{background:var(--c-bg);border-radius:var(--radius-sm);padding:12px;font-size:13px;line-height:1.8;margin-top:8px}
+.account-tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;margin:2px}
+/* ===== Backup reminder ===== */
+.backup-reminder{background:var(--c-warning-light);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:#8a6d00;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.backup-reminder svg{width:18px;height:18px;flex-shrink:0}
+/* ===== Empty state ===== */
+.empty-state{text-align:center;padding:40px 20px;color:var(--c-text-light)}
+.empty-state svg{width:48px;height:48px;margin-bottom:8px;opacity:.4}
+.empty-state p{font-size:14px}
+/* ===== Mobile ===== */
+@media(max-width:768px){
+  .app{padding-bottom:70px}
+  .header{padding:12px 14px}
+  .header-title{font-size:17px}
+  .header-actions .btn{padding:6px 10px;font-size:12px}
+  .header-actions .btn span{display:none}
+  .tab-panel{padding:10px 12px}
+  .card,.topic-card,.hotspot-card,.content-card{padding:12px}
+  .tab-nav{margin:0 12px}
+  .tab-btn{font-size:12px;padding:8px 4px}
+  .form-row{grid-template-columns:1fr 1fr}
+  .form-row-4{grid-template-columns:repeat(2,1fr)}
+  .topic-scores{grid-template-columns:repeat(2,1fr)}
+  .hotspot-fit{grid-template-columns:repeat(2,1fr)}
+  .data-summary{grid-template-columns:repeat(2,1fr)}
+  .today-section{margin:8px 12px}
+  .modal{padding:16px}
+  .modal-title{font-size:16px}
+  .modal-footer .btn{flex:1;justify-content:center}
+  .btn{min-height:40px}
+  .score-input{font-size:16px}
+}
+@media(max-width:480px){
+  .form-row{grid-template-columns:1fr}
+  .header-actions{gap:4px}
+}
+/* safe area */
+.app{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-row">
+      <div class="header-title">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="3" width="20" height="18" rx="3" fill="#E8654E"/>
+          <circle cx="8.5" cy="9.5" r="1.5" fill="#fff"/>
+          <circle cx="15.5" cy="9.5" r="1.5" fill="#fff"/>
+          <path d="M7 15c2 2 8 2 10 0" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M12 6c0-1 .5-2 2-2" stroke="#6C5CE7" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span>小红书内容工作台</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" onclick="exportJSON()">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>导出</span>
+        </button>
+        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 15V3m0 0l4 4m-4-4l-4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>导入</span>
+        </button>
+        <button class="btn btn-outline" onclick="confirmClear()">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>清空</span>
+        </button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Today Section -->
+  <div class="today-section">
+    <div class="today-header">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>今天要处理</span>
+    </div>
+    <div class="today-list" id="todayList"></div>
+  </div>
+
+  <!-- Tab Nav -->
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="topics" onclick="switchTab('topics')">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>选题</span>
+      <span class="tab-badge" id="badgeTopics" style="display:none"></span>
+    </button>
+    <button class="tab-btn" data-tab="hotspots" onclick="switchTab('hotspots')">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>热点</span>
+      <span class="tab-badge" id="badgeHotspots" style="display:none"></span>
+    </button>
+    <button class="tab-btn" data-tab="content" onclick="switchTab('content')">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 14H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>内容</span>
+      <span class="tab-badge" id="badgeContent" style="display:none"></span>
+    </button>
+    <button class="tab-btn" data-tab="data" onclick="switchTab('data')">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M9 19v-6m6 6V5M3 19h18M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19a2 2 0 012-2h14a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>数据</span>
+      <span class="tab-badge" id="badgeData" style="display:none"></span>
+    </button>
+    <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.99.604 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+      <span>设置</span>
+    </button>
+  </div>
+
+  <!-- ===== Module A: Topics ===== -->
+  <div class="tab-panel active" id="panel-topics">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            每周选题
+          </div>
+          <div class="card-subtitle">搜索趋势 → 生成10个候选 → 评分 → 选出4-5篇</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openTopicModal()">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          添加选题
+        </button>
+      </div>
+      <div id="topicStats" style="margin-bottom:8px;font-size:13px;color:var(--c-text-sec)"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="btn btn-secondary btn-sm" onclick="autoSelectTopics()">自动选出本周选题</button>
+        <button class="btn btn-outline btn-sm" onclick="filterTopics('all')">全部</button>
+        <button class="btn btn-outline btn-sm" onclick="filterTopics('selected')">已选</button>
+        <button class="btn btn-outline btn-sm" onclick="filterTopics('candidate')">候选</button>
+        <button class="btn btn-outline btn-sm" onclick="filterTopics('published')">已发布</button>
+      </div>
+    </div>
+    <div id="topicList"></div>
+  </div>
+
+  <!-- ===== Module B: Hotspots ===== -->
+  <div class="tab-panel" id="panel-hotspots">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            热点雷达
+          </div>
+          <div class="card-subtitle">判断热点能否自然连接 INFJ / 情绪 / 猫咪 / 心理学</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openHotspotModal()">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          添加热点
+        </button>
+      </div>
+      <div style="font-size:13px;color:var(--c-text-sec);margin-bottom:8px" id="hotspotStats"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="filterHotspots('all')">全部</button>
+        <button class="btn btn-outline btn-sm" onclick="filterHotspots('kept')">保留</button>
+        <button class="btn btn-outline btn-sm" onclick="filterHotspots('discarded')">舍弃</button>
+      </div>
+    </div>
+    <div id="hotspotList"></div>
+  </div>
+
+  <!-- ===== Module C: Content ===== -->
+  <div class="tab-panel" id="panel-content">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 14H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            内容生成
+          </div>
+          <div class="card-subtitle">基于本周选题自动生成完整小红书笔记方案</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openContentGenModal()">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          生成内容
+        </button>
+      </div>
+      <div style="font-size:13px;color:var(--c-text-sec);margin-bottom:8px" id="contentStats"></div>
+    </div>
+    <div id="contentList"></div>
+  </div>
+
+  <!-- ===== Module D: Data ===== -->
+  <div class="tab-panel" id="panel-data">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 19v-6m6 6V5M3 19h18M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19a2 2 0 012-2h14a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            数据复盘
+          </div>
+          <div class="card-subtitle">记录发布数据 → 每周分析 → 指导下一周选题</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openDataModal()">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          添加记录
+        </button>
+      </div>
+    </div>
+    <div id="dataAnalysis"></div>
+    <div id="dataSummary"></div>
+    <div id="dataCharts"></div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:10px">发布数据记录表</div>
+      <div class="data-table-wrap">
+        <table class="data-table" id="dataTable">
+          <thead>
+            <tr>
+              <th>日期</th><th>时间</th><th>标题</th><th>类型</th><th>阅读</th><th>点赞</th><th>收藏</th><th>评论</th><th>分享</th><th>涨粉</th><th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Settings ===== -->
+  <div class="tab-panel" id="panel-settings">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        账号定位
+      </div>
+      <div class="setting-item">
+        <label class="form-label">人格类型 / 核心标签</label>
+        <input class="form-input" id="setPersonality" placeholder="INFJ" style="margin-bottom:8px">
+        <div id="setTags" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+      </div>
+      <div class="setting-item">
+        <label class="form-label">核心话题方向</label>
+        <textarea class="setting-textarea" id="setCoreTopics" placeholder="情绪、内耗、关系、自我成长"></textarea>
+      </div>
+      <div class="setting-item">
+        <label class="form-label">内容元素</label>
+        <textarea class="setting-textarea" id="setElements" placeholder="猫咪/宠物、简单心理学解释"></textarea>
+      </div>
+      <div class="setting-item">
+        <label class="form-label">风格定位</label>
+        <textarea class="setting-textarea" id="setStyle" placeholder="第一人称、真实生活、INFJ视角、简单心理学解释"></textarea>
+      </div>
+      <div class="setting-item">
+        <label class="form-label">目标受众</label>
+        <input class="form-input" id="setAudience" placeholder="20-35岁年轻人，关注情绪与自我成长">
+      </div>
+      <div class="setting-item">
+        <label class="form-label">避免事项</label>
+        <textarea class="setting-textarea" id="setAvoid" placeholder="教科书式心理学、硬蹭热点、虚假数据"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveSettings()" style="width:100%;justify-content:center">保存账号定位</button>
+      <div class="account-preview" id="accountPreview"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px">已发布选题列表</div>
+      <div class="card-subtitle" style="margin-bottom:8px">用于避免重复推荐已发布过的内容</div>
+      <div id="publishedList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px">数据管理</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="exportJSON()" style="flex:1;justify-content:center">导出 JSON 备份</button>
+        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" style="flex:1;justify-content:center">导入恢复</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="exportCSV()" style="flex:1;justify-content:center">导出 CSV (数据表)</button>
+        <button class="btn btn-danger" onclick="confirmClear()" style="flex:1;justify-content:center">清空全部数据</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: Add Topic ===== -->
+<div class="modal-overlay" id="modalTopic">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">添加选题</div>
+      <button class="modal-close" onclick="closeModal('modalTopic')">
+        <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">选题标题</label>
+        <input class="form-input" id="topicTitle" placeholder="如：INFJ的社交内耗：为什么社交后总感到空虚">
+      </div>
+      <div class="form-group">
+        <label class="form-label">来源 / 类型</label>
+        <select class="form-select" id="topicCategory">
+          <option value="emo">情绪/内耗</option>
+          <option value="infj">INFJ话题</option>
+          <option value="cat">猫咪/宠物</option>
+          <option value="psych">心理学</option>
+          <option value="hot">社会热点</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">选题简述（可选）</label>
+        <textarea class="form-textarea" id="topicDesc" placeholder="选题的核心观点和切入角度"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:6px">评分（各项满分不同，总分100）</label>
+        <div class="form-row-4">
+          <div>
+            <div class="score-input-label">热度 (0-30)</div>
+            <input class="form-input score-input" id="scoreHeat" type="number" min="0" max="30" value="20">
+          </div>
+          <div>
+            <div class="score-input-label">相关性 (0-25)</div>
+            <input class="form-input score-input" id="scoreRel" type="number" min="0" max="25" value="20">
+          </div>
+          <div>
+            <div class="score-input-label">共鸣度 (0-25)</div>
+            <input class="form-input score-input" id="scoreReso" type="number" min="0" max="25" value="20">
+          </div>
+          <div>
+            <div class="score-input-label">内容潜力 (0-20)</div>
+            <input class="form-input score-input" id="scorePot" type="number" min="0" max="20" value="15">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">计划日期（可选）</label>
+        <input class="form-input" id="topicDate" type="date">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalTopic')">取消</button>
+      <button class="btn btn-primary" onclick="addTopic()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: Add Hotspot ===== -->
+<div class="modal-overlay" id="modalHotspot">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">添加热点</div>
+      <button class="modal-close" onclick="closeModal('modalHotspot')">
+        <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">热点事件</label>
+        <input class="form-input" id="hotspotTitle" placeholder="如：年轻人搭子文化流行">
+      </div>
+      <div class="form-group">
+        <label class="form-label">热点简述</label>
+        <textarea class="form-textarea" id="hotspotDesc" placeholder="热点背景和当前热度"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:6px">账号连接度评分（各项满分25，总分100）</label>
+        <div class="form-row-4">
+          <div>
+            <div class="score-input-label">INFJ连接</div>
+            <input class="form-input score-input" id="fitInfj" type="number" min="0" max="25" value="15">
+          </div>
+          <div>
+            <div class="score-input-label">情绪连接</div>
+            <input class="form-input score-input" id="fitEmo" type="number" min="0" max="25" value="15">
+          </div>
+          <div>
+            <div class="score-input-label">猫咪连接</div>
+            <input class="form-input score-input" id="fitCat" type="number" min="0" max="25" value="5">
+          </div>
+          <div>
+            <div class="score-input-label">心理学连接</div>
+            <input class="form-input score-input" id="fitPsy" type="number" min="0" max="25" value="15">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">切入角度（可选）</label>
+        <textarea class="form-textarea" id="hotspotAngle" placeholder="如：INFJ如何看待搭子关系"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">建议发布日</label>
+        <select class="form-select" id="hotspotPublishDay">
+          <option value="">不指定</option>
+          <option value="周一">周一</option>
+          <option value="周二">周二</option>
+          <option value="周三">周三</option>
+          <option value="周四">周四</option>
+          <option value="周五">周五</option>
+          <option value="周六">周六</option>
+          <option value="周日">周日</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalHotspot')">取消</button>
+      <button class="btn btn-primary" onclick="addHotspot()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: Generate Content ===== -->
+<div class="modal-overlay" id="modalContentGen">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">生成小红书内容</div>
+      <button class="modal-close" onclick="closeModal('modalContentGen')">
+        <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">选择本周选题</label>
+        <select class="form-select" id="genTopicSelect"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">计划发布日期</label>
+        <input class="form-input" id="genPublishDate" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">计划发布时间</label>
+        <select class="form-select" id="genPublishTime">
+          <option value="09:00">09:00 周末早晨</option>
+          <option value="12:00">12:00 午休</option>
+          <option value="19:00">19:00 工作日晚间</option>
+          <option value="20:00" selected>20:00 深夜emo时段</option>
+          <option value="21:00">21:00 深夜</option>
+        </select>
+      </div>
+      <div style="font-size:13px;color:var(--c-text-sec);background:var(--c-bg);padding:10px;border-radius:var(--radius-sm);line-height:1.6">
+        系统将根据账号定位（INFJ + 情绪 + 猫咪 + 心理学）自动生成：3个标题、推荐标题、完整正文、封面文案、配图计划、评论区互动问题、相关标签、推荐发布时间。
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalContentGen')">取消</button>
+      <button class="btn btn-primary" onclick="generateContent()">生成</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: Add Data ===== -->
+<div class="modal-overlay" id="modalData">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">添加数据记录</div>
+      <button class="modal-close" onclick="closeModal('modalData')">
+        <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">发布日期</label>
+          <input class="form-input" id="dataDate" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">发布时间</label>
+          <input class="form-input" id="dataTime" type="time" value="20:00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">标题</label>
+        <input class="form-input" id="dataTitle" placeholder="笔记标题">
+      </div>
+      <div class="form-group">
+        <label class="form-label">内容类型</label>
+        <select class="form-select" id="dataType">
+          <option value="情绪/内耗">情绪/内耗</option>
+          <option value="INFJ">INFJ</option>
+          <option value="猫咪">猫咪</option>
+          <option value="心理学">心理学</option>
+          <option value="关系">关系</option>
+          <option value="自我成长">自我成长</option>
+          <option value="社会热点">社会热点</option>
+        </select>
+      </div>
+      <div class="form-row-4">
+        <div class="form-group"><div class="score-input-label">阅读</div><input class="form-input score-input" id="dataRead" type="number" min="0" value="0"></div>
+        <div class="form-group"><div class="score-input-label">点赞</div><input class="form-input score-input" id="dataLike" type="number" min="0" value="0"></div>
+        <div class="form-group"><div class="score-input-label">收藏</div><input class="form-input score-input" id="dataSave" type="number" min="0" value="0"></div>
+        <div class="form-group"><div class="score-input-label">评论</div><input class="form-input score-input" id="dataComment" type="number" min="0" value="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">分享</label><input class="form-input" id="dataShare" type="number" min="0" value="0"></div>
+        <div class="form-group"><label class="form-label">涨粉</label><input class="form-input" id="dataFollow" type="number" min="0" value="0"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalData')">取消</button>
+      <button class="btn btn-primary" onclick="addDataRecord()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Confirm Modal ===== -->
+<div class="modal-overlay" id="modalConfirm">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><div class="modal-title" id="confirmTitle">确认操作</div></div>
+    <div class="modal-body">
+      <p id="confirmMsg" style="font-size:14px;line-height:1.6"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalConfirm')">取消</button>
+      <button class="btn btn-danger" id="confirmBtn">确认</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   DATA LAYER
+========================================================= */
+const KEY_PREFIX = 'wb_xhs_content_';
+const KEYS = {
+  account: KEY_PREFIX + 'account',
+  topics: KEY_PREFIX + 'topics',
+  hotspots: KEY_PREFIX + 'hotspots',
+  content: KEY_PREFIX + 'content',
+  data: KEY_PREFIX + 'data',
+  published: KEY_PREFIX + 'published'
+};
+
+function loadData(key){
+  try{ return JSON.parse(localStorage.getItem(key)) || null; }catch(e){ return null; }
+}
+function saveData(key, val){
+  localStorage.setItem(key, JSON.stringify(val));
+}
+
+// Global state
+let state = {
+  account: null,
+  topics: [],
+  hotspots: [],
+  content: [],
+  data: [],
+  published: [],
+  topicFilter: 'all',
+  hotspotFilter: 'all'
+};
+
+// Current date helpers
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function dateOffset(days){ var d = new Date(); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+function daysBetween(dateStr){
+  var d = new Date(dateStr); var now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((d - now) / 86400000);
+}
+
+/* =========================================================
+   SEED DATA
+========================================================= */
+function seedData(){
+  var seeded = loadData(KEYS.topics);
+  if(seeded && seeded.length > 0) return; // Already has data
+
+  var account = {
+    personality: 'INFJ',
+    tags: ['INFJ','情绪','内耗','关系','自我成长','猫咪','心理学'],
+    coreTopics: '情绪管理、内耗自救、人际关系、自我成长、INFJ人格',
+    elements: '猫咪/宠物日常、简单心理学解释（非学术）、真实生活第一人称',
+    style: '第一人称叙事 + 真实生活场景 + 猫咪细节 + INFJ视角 + 简单心理学解释。避免教科书式内容。',
+    audience: '20-35岁年轻人，关注情绪健康与自我成长，喜欢猫',
+    avoid: '教科书式心理学、硬蹭热点、虚假数据、过度营销'
+  };
+  saveData(KEYS.account, account);
+
+  var topics = [
+    {id:'t1', title:'INFJ的社交内耗：为什么社交后总感到空虚', category:'emo', desc:'从INFJ视角解读社交后的能量耗竭，结合心理学中的"社交电池"概念', heat:28, rel:25, reso:23, pot:18, total:94, status:'selected', date:dateOffset(-2), createdAt:dateOffset(-5)},
+    {id:'t2', title:'养猫后我才明白的5个情绪真相', category:'cat', desc:'通过养猫经历串联情绪管理的5个心理学知识点', heat:25, rel:24, reso:22, pot:19, total:90, status:'selected', date:dateOffset(1), createdAt:dateOffset(-5)},
+    {id:'t3', title:'心理学告诉你：为什么INFJ总在深夜emo', category:'infj', desc:'结合昼夜节律和INFJ的Ni功能解释深夜情绪波动', heat:22, rel:25, reso:24, pot:17, total:88, status:'selected', date:dateOffset(3), createdAt:dateOffset(-5)},
+    {id:'t4', title:'我家猫教我的情绪管理课', category:'cat', desc:'从猫咪的行为方式中提炼情绪管理的方法', heat:20, rel:23, reso:21, pot:18, total:82, status:'selected', date:dateOffset(5), createdAt:dateOffset(-5)},
+    {id:'t5', title:'年轻人为什么越来越不想社交', category:'hot', desc:'结合社会热点分析年轻人社交退缩的心理原因', heat:26, rel:20, reso:22, pot:14, total:82, status:'candidate', date:'', createdAt:dateOffset(-5)},
+    {id:'t6', title:'INFJ和猫咪的奇妙相似性', category:'infj', desc:'对比INFJ人格特征和猫咪行为模式的共通点', heat:18, rel:24, reso:20, pot:16, total:78, status:'candidate', date:'', createdAt:dateOffset(-5)},
+    {id:'t7', title:'情绪日记：记录你的内耗时刻', category:'emo', desc:'推广情绪日记作为内耗自救的工具', heat:15, rel:22, reso:21, pot:18, total:76, status:'candidate', date:'', createdAt:dateOffset(-5)},
+    {id:'t8', title:'猫咪的治愈力：科学解释', category:'psych', desc:'从心理学和生理学角度解释猫咪对情绪的疗愈作用', heat:16, rel:23, reso:18, pot:17, total:74, status:'candidate', date:'', createdAt:dateOffset(-5)},
+    {id:'t9', title:'INFJ的完美主义陷阱', category:'infj', desc:'分析INFJ型人格的完美主义倾向及应对方法', heat:14, rel:24, reso:19, pot:16, total:73, status:'candidate', date:'', createdAt:dateOffset(-5)},
+    {id:'t10', title:'关系中的边界感：INFJ的必修课', category:'emo', desc:'探讨INFJ在人际关系中如何建立健康的边界', heat:13, rel:23, reso:20, pot:15, total:71, status:'candidate', date:'', createdAt:dateOffset(-5)}
+  ];
+  saveData(KEYS.topics, topics);
+
+  var hotspots = [
+    {id:'h1', title:'年轻人"搭子文化"流行', desc:'社交降级趋势下，年轻人倾向于找"搭子"而非深交朋友，反映了社交焦虑和对轻社交的需求', fitInfj:20, fitEmo:22, fitCat:8, fitPsy:20, total:70, status:'kept', angle:'INFJ如何看待"搭子"关系：我们需要的不是更多朋友，而是恰到好处的社交距离。可以从INFJ的社交电池概念切入，结合我家猫对人的态度（选择性社交）做类比。', publishDay:'周三', createdAt:dateOffset(-5)},
+    {id:'h2', title:'某综艺情感话题热搜', desc:'某综艺节目讨论了亲密关系中的控制欲问题', fitInfj:10, fitEmo:15, fitCat:3, fitPsy:12, total:40, status:'discarded', angle:'', publishDay:'', createdAt:dateOffset(-5)}
+  ];
+  saveData(KEYS.hotspots, hotspots);
+
+  var content = [
+    {
+      id:'c1',
+      topicId:'t1',
+      topicTitle:'INFJ的社交内耗：为什么社交后总感到空虚',
+      titles:['INFJ才知道的社交内耗：不是不合群，是社交电池没电了','为什么每次社交完，INFJ都想躲进被窝里？','养猫后我懂了：INFJ的社交方式，其实和猫一样'],
+      recommendedTitle:'INFJ才知道的社交内耗：不是不合群，是社交电池没电了',
+      body:'又是一个社交后的夜晚。\n我躺在沙发上，猫跳上来踩在我胸口。\n那一刻我突然觉得：原来我需要的不是更多的社交，\n而是一场"社交后的独处修复"。\n\n作为INFJ，我的社交电池容量大概只有别人的三分之一。\n聚会两小时，恢复需要一整天。\n这不是矫情，心理学上叫"社交损耗"——\n内向者的大脑在社交时需要消耗更多能量来处理信息。\n\n我家猫就是个很好的例子。\n它不会跟所有的客人都亲近，\n只选择性地接近它觉得"安全"的人。\n社交完了，它会躲到柜子下面待一会儿，\n再出来的时候又是一条好猫。\n\nINFJ也是这样。\n我们不是不喜欢社交，\n而是社交对我们来说是"高耗能活动"。\n所以——\n\n如果你也是社交后感到空虚的人，\n别责怪自己。\n这不是你的问题，是你大脑的运行方式。\n\n给自己一个"社交后恢复期"，\n就像我家的猫一样：\n社交完，躲一会儿，\n充电满了，再出发。\n\n#INFJ社交方式 #不丢人',
+      coverCopy:'INFJ社交内耗\n不是不合群\n是社交电池没电了',
+      imageCount:6,
+      imagePlan:['封面：标题文字 + 一个人躺沙发的插画 + 猫咪剪影','场景图：聚会后的疲惫感（手机拍生活场景）','猫咪图：猫躲在柜子下的照片（类比INFJ的社交后恢复）','知识卡：社交电池概念图解（文字卡片）','对比图：外向者vs内向者的能量消耗曲线','金句卡："社交完，躲一会儿，充电满了，再出发"'],
+      commentQuestions:['你是INFJ吗？社交后你会做什么来恢复？','你的社交电池大概能撑多久？','你觉得养猫对你情绪有帮助吗？'],
+      tags:['INFJ','社交内耗','社交电池','内向者','情绪管理','猫咪治愈','心理学小知识','自我成长','INFJ人格','养猫日常'],
+      publishTime:'20:00',
+      publishDate:dateOffset(-2),
+      status:'draft',
+      createdAt:dateOffset(-2)
+    }
+  ];
+  saveData(KEYS.content, content);
+
+  var data = [
+    {id:'d1', date:dateOffset(-14), time:'20:00', title:'INFJ的深夜emo：不是矫情，是大脑在加班', type:'INFJ', reads:8520, likes:680, saves:420, comments:85, shares:32, follow:28},
+    {id:'d2', date:dateOffset(-10), time:'20:00', title:'我家猫的5个瞬间治愈了我的内耗', type:'猫咪', reads:12300, likes:1020, saves:780, comments:156, shares:68, follow:52},
+    {id:'d3', date:dateOffset(-7), time:'19:00', title:'心理学小课：为什么你总在关系中内耗', type:'心理学', reads:6800, likes:520, saves:390, comments:62, shares:25, follow:18},
+    {id:'d4', date:dateOffset(-3), time:'20:00', title:'INFJ和猫咪的相似之处，看完沉默了', type:'INFJ', reads:15600, likes:1350, saves:920, comments:210, shares:95, follow:78}
+  ];
+  saveData(KEYS.data, data);
+
+  var published = [
+    'INFJ的深夜emo：不是矫情，是大脑在加班',
+    '我家猫的5个瞬间治愈了我的内耗',
+    '心理学小课：为什么你总在关系中内耗',
+    'INFJ和猫咪的相似之处，看完沉默了'
+  ];
+  saveData(KEYS.published, published);
+}
+
+/* =========================================================
+   LOAD STATE
+========================================================= */
+function loadState(){
+  state.account = loadData(KEYS.account);
+  state.topics = loadData(KEYS.topics) || [];
+  state.hotspots = loadData(KEYS.hotspots) || [];
+  state.content = loadData(KEYS.content) || [];
+  state.data = loadData(KEYS.data) || [];
+  state.published = loadData(KEYS.published) || [];
+}
+
+/* =========================================================
+   TAB SWITCHING
+========================================================= */
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(function(p){
+    p.classList.toggle('active', p.id === 'panel-' + name);
+  });
+  if(name === 'data') renderDataAnalysis();
+}
+
+/* =========================================================
+   MODAL HELPERS
+========================================================= */
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
+/* =========================================================
+   RENDER: TODAY SECTION
+========================================================= */
+function renderToday(){
+  var list = [];
+  var now = new Date();
+
+  // Overdue: selected topics with past dates and no content generated
+  state.topics.forEach(function(t){
+    if(t.status === 'selected' && t.date){
+      var hasContent = state.content.some(function(c){ return c.topicId === t.id; });
+      if(!hasContent && daysBetween(t.date) < 0){
+        list.push({type:'overdue', text:'选题「'+t.title+'」计划日期已过，尚未生成内容', action:'生成内容', actionFn:function(){ switchTab('content'); openContentGenModal(); }});
+      }
+    }
+  });
+
+  // Today: content scheduled for today
+  state.content.forEach(function(c){
+    if(c.status !== 'published' && c.publishDate){
+      var diff = daysBetween(c.publishDate);
+      if(diff === 0){
+        list.push({type:'today', text:'今天计划发布：「'+c.recommendedTitle+'」', action:'查看', actionFn:function(){ switchTab('content'); }});
+      } else if(diff > 0 && diff <= 2){
+        list.push({type:'upcoming', text:diff+'天后发布：「'+c.recommendedTitle+'」', action:'查看', actionFn:function(){ switchTab('content'); }});
+      }
+    }
+  });
+
+  // Weekly topic selection reminder
+  var selectedCount = state.topics.filter(function(t){ return t.status === 'selected'; }).length;
+  if(selectedCount < 4){
+    list.push({type:'upcoming', text:'本周选题不足4篇，当前'+selectedCount+'篇已选', action:'去选题', actionFn:function(){ switchTab('topics'); }});
+  }
+
+  // Pending hotspots
+  var pendingHotspots = state.hotspots.filter(function(h){ return h.status === 'pending'; });
+  if(pendingHotspots.length > 0){
+    list.push({type:'upcoming', text:'有'+pendingHotspots.length+'个热点待评估', action:'去评估', actionFn:function(){ switchTab('hotspots'); }});
+  }
+
+  var html = '';
+  if(list.length === 0){
+    html = '<div class="today-empty">今天暂无待处理事项，可以去添加新选题或记录数据</div>';
+  } else {
+    list.forEach(function(item){
+      html += '<div class="today-item '+item.type+'">';
+      html += '<span class="today-tag '+item.type+'">'+(item.type==='overdue'?'逾期':item.type==='today'?'今天':'待办')+'</span>';
+      html += '<span class="today-text">'+item.text+'</span>';
+      html += '<button class="btn btn-ghost btn-sm" onclick="void(0)" data-action>'+item.action+'</button>';
+      html += '</div>';
+    });
+  }
+  document.getElementById('todayList').innerHTML = html;
+  // Bind actions
+  var buttons = document.querySelectorAll('#todayList button[data-action]');
+  list.forEach(function(item, i){
+    if(buttons[i]){ buttons[i].onclick = item.actionFn; }
+  });
+
+  // Backup reminder
+  var totalCount = state.topics.length + state.content.length + state.data.length;
+  var existingReminder = document.querySelector('.backup-reminder');
+  if(totalCount >= 30 && !existingReminder){
+    var reminder = document.createElement('div');
+    reminder.className = 'backup-reminder';
+    reminder.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>数据已积累 '+totalCount+' 条，建议导出备份</span>';
+    var firstPanel = document.querySelector('.tab-panel.active');
+    if(firstPanel) firstPanel.insertBefore(reminder, firstPanel.firstChild);
+  }
+}
+
+/* =========================================================
+   RENDER: TOPICS (Module A)
+========================================================= */
+var categoryLabels = {emo:'情绪/内耗', infj:'INFJ', cat:'猫咪', psych:'心理学', hot:'社会热点'};
+var categoryClasses = {emo:'cat-emo', infj:'cat-infj', cat:'cat-cat', psych:'cat-psych', hot:'cat-hot'};
+
+function calcTotal(t){ return (t.heat||0) + (t.rel||0) + (t.reso||0) + (t.pot||0); }
+
+function renderTopics(){
+  var list = state.topics.slice().sort(function(a,b){ return calcTotal(b) - calcTotal(a); });
+  if(state.topicFilter !== 'all'){
+    list = list.filter(function(t){ return t.status === state.topicFilter; });
+  }
+
+  var selectedCount = state.topics.filter(function(t){ return t.status === 'selected'; }).length;
+  var candidateCount = state.topics.filter(function(t){ return t.status === 'candidate'; }).length;
+  var publishedCount = state.published.length;
+  document.getElementById('topicStats').innerHTML = '共 '+state.topics.length+' 个选题 | <span style="color:var(--c-success);font-weight:600">'+selectedCount+'</span> 已选 | <span style="color:var(--c-text-sec)">'+candidateCount+'</span> 候选 | <span style="color:var(--c-text-light)">'+publishedCount+'</span> 已发布';
+
+  document.getElementById('badgeTopics').textContent = state.topics.filter(function(t){ return t.status === 'selected'; }).length;
+  document.getElementById('badgeTopics').style.display = selectedCount > 0 ? '' : 'none';
+
+  if(list.length === 0){
+    document.getElementById('topicList').innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><p>暂无选题，点击"添加选题"开始</p></div>';
+    return;
+  }
+
+  var html = '';
+  list.forEach(function(t){
+    var total = calcTotal(t);
+    var isPublished = checkPublished(t.title);
+    var cardClass = 'topic-card';
+    if(t.status === 'selected') cardClass += ' selected';
+    if(isPublished) cardClass += ' published';
+
+    html += '<div class="'+cardClass+'" data-id="'+t.id+'">';
+    html += '<div class="topic-card-top">';
+    html += '<div class="topic-title">'+escHtml(t.title)+'</div>';
+    html += '<span class="topic-category '+categoryClasses[t.category]+'">'+categoryLabels[t.category]+'</span>';
+    html += '</div>';
+    if(t.desc){ html += '<div style="font-size:12px;color:var(--c-text-sec);margin-bottom:6px;line-height:1.5">'+escHtml(t.desc)+'</div>'; }
+    html += '<div class="topic-scores">';
+    html += '<div class="score-item"><div class="score-label">热度 '+(t.heat||0)+'/30</div><div class="score-bar"><div class="score-fill heat" style="width:'+((t.heat||0)/30*100)+'%"></div></div><div class="score-val">'+(t.heat||0)+'</div></div>';
+    html += '<div class="score-item"><div class="score-label">相关性 '+(t.rel||0)+'/25</div><div class="score-bar"><div class="score-fill rel" style="width:'+((t.rel||0)/25*100)+'%"></div></div><div class="score-val">'+(t.rel||0)+'</div></div>';
+    html += '<div class="score-item"><div class="score-label">共鸣度 '+(t.reso||0)+'/25</div><div class="score-bar"><div class="score-fill reso" style="width:'+((t.reso||0)/25*100)+'%"></div></div><div class="score-val">'+(t.reso||0)+'</div></div>';
+    html += '<div class="score-item"><div class="score-label">潜力 '+(t.pot||0)+'/20</div><div class="score-bar"><div class="score-fill pot" style="width:'+((t.pot||0)/20*100)+'%"></div></div><div class="score-val">'+(t.pot||0)+'</div></div>';
+    html += '</div>';
+    html += '<div class="topic-total"><span class="total-score">'+total+'</span><span class="total-label">/ 100 总分</span>';
+    if(t.date){ html += '<span style="font-size:12px;color:var(--c-text-light);margin-left:auto">计划：'+t.date+'</span>'; }
+    html += '</div>';
+    if(isPublished){
+      html += '<div class="topic-dedup"><svg viewBox="0 0 24 24" fill="none"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>该选题已发布过类似内容</div>';
+    }
+    html += '<div class="topic-actions">';
+    if(t.status !== 'selected' && !isPublished){
+      html += '<button class="btn btn-primary btn-sm" onclick="setTopicStatus(\''+t.id+'\',\'selected\')">选为本周选题</button>';
+    }
+    if(t.status === 'selected'){
+      html += '<button class="btn btn-outline btn-sm" onclick="setTopicStatus(\''+t.id+'\',\'candidate\')">取消选择</button>';
+    }
+    html += '<button class="btn btn-secondary btn-sm" onclick="genContentFromTopic(\''+t.id+'\')">生成内容</button>';
+    html += '<button class="btn btn-ghost btn-sm" onclick="deleteTopic(\''+t.id+'\')">删除</button>';
+    html += '</div>';
+    html += '</div>';
+  });
+  document.getElementById('topicList').innerHTML = html;
+}
+
+function filterTopics(f){ state.topicFilter = f; renderTopics(); }
+
+function setTopicStatus(id, status){
+  state.topics.forEach(function(t){ if(t.id === id) t.status = status; });
+  saveData(KEYS.topics, state.topics);
+  renderTopics();
+  renderToday();
+}
+
+function autoSelectTopics(){
+  var sorted = state.topics.filter(function(t){ return !checkPublished(t.title); }).sort(function(a,b){ return calcTotal(b) - calcTotal(a); });
+  sorted.forEach(function(t, i){ t.status = i < 5 ? 'selected' : 'candidate'; });
+  saveData(KEYS.topics, state.topics);
+  renderTopics();
+  renderToday();
+  showToast('已自动选出评分最高的5个选题');
+}
+
+function deleteTopic(id){
+  showConfirm('删除选题', '确定删除这个选题吗？此操作不可撤销。', function(){
+    state.topics = state.topics.filter(function(t){ return t.id !== id; });
+    saveData(KEYS.topics, state.topics);
+    renderTopics();
+    renderToday();
+  });
+}
+
+function openTopicModal(){
+  document.getElementById('topicTitle').value = '';
+  document.getElementById('topicDesc').value = '';
+  document.getElementById('topicCategory').value = 'emo';
+  document.getElementById('scoreHeat').value = 20;
+  document.getElementById('scoreRel').value = 20;
+  document.getElementById('scoreReso').value = 20;
+  document.getElementById('scorePot').value = 15;
+  document.getElementById('topicDate').value = '';
+  openModal('modalTopic');
+}
+
+function addTopic(){
+  var title = document.getElementById('topicTitle').value.trim();
+  if(!title){ showToast('请输入选题标题'); return; }
+  var topic = {
+    id: 't' + Date.now(),
+    title: title,
+    category: document.getElementById('topicCategory').value,
+    desc: document.getElementById('topicDesc').value.trim(),
+    heat: parseInt(document.getElementById('scoreHeat').value) || 0,
+    rel: parseInt(document.getElementById('scoreRel').value) || 0,
+    reso: parseInt(document.getElementById('scoreReso').value) || 0,
+    pot: parseInt(document.getElementById('scorePot').value) || 0,
+    status: 'candidate',
+    date: document.getElementById('topicDate').value,
+    createdAt: todayStr()
+  };
+  topic.total = calcTotal(topic);
+  if(checkPublished(topic.title)){
+    showToast('注意：已发布过类似选题');
+  }
+  state.topics.push(topic);
+  saveData(KEYS.topics, state.topics);
+  closeModal('modalTopic');
+  renderTopics();
+  renderToday();
+}
+
+/* =========================================================
+   RENDER: HOTSPOTS (Module B)
+========================================================= */
+function renderHotspots(){
+  var list = state.hotspots.slice().sort(function(a,b){ return (b.total||0) - (a.total||0); });
+  if(state.hotspotFilter !== 'all'){
+    list = list.filter(function(h){ return h.status === state.hotspotFilter; });
+  }
+
+  var keptCount = state.hotspots.filter(function(h){ return h.status === 'kept'; }).length;
+  var discardedCount = state.hotspots.filter(function(h){ return h.status === 'discarded'; }).length;
+  document.getElementById('hotspotStats').innerHTML = '共 '+state.hotspots.length+' 个热点 | <span style="color:var(--c-success);font-weight:600">'+keptCount+'</span> 保留 | <span style="color:var(--c-text-light)">'+discardedCount+'</span> 舍弃';
+  document.getElementById('badgeHotspots').textContent = keptCount;
+  document.getElementById('badgeHotspots').style.display = keptCount > 0 ? '' : 'none';
+
+  if(list.length === 0){
+    document.getElementById('hotspotList').innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><p>暂无热点，点击"添加热点"开始</p></div>';
+    return;
+  }
+
+  var html = '';
+  list.forEach(function(h){
+    var cardClass = 'hotspot-card';
+    if(h.status === 'kept') cardClass += ' kept';
+    if(h.status === 'discarded') cardClass += ' discarded';
+
+    html += '<div class="'+cardClass+'">';
+    html += '<div class="hotspot-title">'+escHtml(h.title)+'</div>';
+    if(h.desc){ html += '<div style="font-size:13px;color:var(--c-text-sec);margin-bottom:6px;line-height:1.5">'+escHtml(h.desc)+'</div>'; }
+    html += '<div class="hotspot-fit">';
+    html += '<div class="fit-item"><div class="fit-label">INFJ '+(h.fitInfj||0)+'/25</div><div class="fit-bar"><div class="fit-fill infj" style="width:'+((h.fitInfj||0)/25*100)+'%"></div></div><div class="fit-val">'+(h.fitInfj||0)+'</div></div>';
+    html += '<div class="fit-item"><div class="fit-label">情绪 '+(h.fitEmo||0)+'/25</div><div class="fit-bar"><div class="fit-fill emo" style="width:'+((h.fitEmo||0)/25*100)+'%"></div></div><div class="fit-val">'+(h.fitEmo||0)+'</div></div>';
+    html += '<div class="fit-item"><div class="fit-label">猫咪 '+(h.fitCat||0)+'/25</div><div class="fit-bar"><div class="fit-fill cat" style="width:'+((h.fitCat||0)/25*100)+'%"></div></div><div class="fit-val">'+(h.fitCat||0)+'</div></div>';
+    html += '<div class="fit-item"><div class="fit-label">心理学 '+(h.fitPsy||0)+'/25</div><div class="fit-bar"><div class="fit-fill psy" style="width:'+((h.fitPsy||0)/25*100)+'%"></div></div><div class="fit-val">'+(h.fitPsy||0)+'</div></div>';
+    html += '</div>';
+    html += '<div class="topic-total"><span class="total-score">'+(h.total||0)+'</span><span class="total-label">/ 100 连接度</span></div>';
+    if((h.total||0) < 60 && h.status === 'pending'){
+      html += '<div style="font-size:12px;color:var(--c-danger);margin-top:4px">连接度不足60，建议舍弃</div>';
+    }
+    if(h.status === 'kept'){
+      if(h.angle){ html += '<div class="hotspot-detail"><strong>切入角度：</strong>'+escHtml(h.angle)+'</div>'; }
+      if(h.publishDay){ html += '<div class="hotspot-detail"><strong>建议发布：</strong>'+h.publishDay+'</div>'; }
+      html += '<div class="hotspot-detail"><strong>为什么值得跟：</strong>该热点与账号定位连接度足够，可以自然融入INFJ/情绪/心理学视角</div>';
+    }
+    html += '<div class="hotspot-actions">';
+    if(h.status !== 'kept'){
+      html += '<button class="btn btn-primary btn-sm" onclick="setHotspotStatus(\''+h.id+'\',\'kept\')">保留</button>';
+    }
+    if(h.status !== 'discarded'){
+      html += '<button class="btn btn-outline btn-sm" onclick="setHotspotStatus(\''+h.id+'\',\'discarded\')">舍弃</button>';
+    }
+    html += '<button class="btn btn-ghost btn-sm" onclick="deleteHotspot(\''+h.id+'\')">删除</button>';
+    html += '</div>';
+    html += '</div>';
+  });
+  document.getElementById('hotspotList').innerHTML = html;
+}
+
+function filterHotspots(f){ state.hotspotFilter = f; renderHotspots(); }
+
+function setHotspotStatus(id, status){
+  state.hotspots.forEach(function(h){ if(h.id === id) h.status = status; });
+  saveData(KEYS.hotspots, state.hotspots);
+  renderHotspots();
+  renderToday();
+}
+
+function deleteHotspot(id){
+  showConfirm('删除热点', '确定删除这个热点吗？', function(){
+    state.hotspots = state.hotspots.filter(function(h){ return h.id !== id; });
+    saveData(KEYS.hotspots, state.hotspots);
+    renderHotspots();
+    renderToday();
+  });
+}
+
+function openHotspotModal(){
+  document.getElementById('hotspotTitle').value = '';
+  document.getElementById('hotspotDesc').value = '';
+  document.getElementById('fitInfj').value = 15;
+  document.getElementById('fitEmo').value = 15;
+  document.getElementById('fitCat').value = 5;
+  document.getElementById('fitPsy').value = 15;
+  document.getElementById('hotspotAngle').value = '';
+  document.getElementById('hotspotPublishDay').value = '';
+  openModal('modalHotspot');
+}
+
+function addHotspot(){
+  var title = document.getElementById('hotspotTitle').value.trim();
+  if(!title){ showToast('请输入热点标题'); return; }
+  var h = {
+    id: 'h' + Date.now(),
+    title: title,
+    desc: document.getElementById('hotspotDesc').value.trim(),
+    fitInfj: parseInt(document.getElementById('fitInfj').value) || 0,
+    fitEmo: parseInt(document.getElementById('fitEmo').value) || 0,
+    fitCat: parseInt(document.getElementById('fitCat').value) || 0,
+    fitPsy: parseInt(document.getElementById('fitPsy').value) || 0,
+    status: 'pending',
+    angle: document.getElementById('hotspotAngle').value.trim(),
+    publishDay: document.getElementById('hotspotPublishDay').value,
+    createdAt: todayStr()
+  };
+  h.total = h.fitInfj + h.fitEmo + h.fitCat + h.fitPsy;
+  state.hotspots.push(h);
+  saveData(KEYS.hotspots, state.hotspots);
+  closeModal('modalHotspot');
+  renderHotspots();
+  renderToday();
+}
+
+/* =========================================================
+   RENDER: CONTENT (Module C)
+========================================================= */
+function renderContent(){
+  var list = state.content.slice().sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
+  var draftCount = list.filter(function(c){ return c.status === 'draft'; }).length;
+  var scheduledCount = list.filter(function(c){ return c.status === 'scheduled'; }).length;
+  var publishedCount = list.filter(function(c){ return c.status === 'published'; }).length;
+  document.getElementById('contentStats').innerHTML = '共 '+list.length+' 篇 | <span style="color:#8a6d00;font-weight:600">'+draftCount+'</span> 草稿 | <span style="color:var(--c-secondary);font-weight:600">'+scheduledCount+'</span> 已排期 | <span style="color:var(--c-success);font-weight:600">'+publishedCount+'</span> 已发布';
+  document.getElementById('badgeContent').textContent = draftCount;
+  document.getElementById('badgeContent').style.display = draftCount > 0 ? '' : 'none';
+
+  if(list.length === 0){
+    document.getElementById('contentList').innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 14H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><p>暂无内容，选择本周选题生成笔记方案</p></div>';
+    return;
+  }
+
+  var html = '';
+  list.forEach(function(c){
+    var statusLabel = c.status === 'draft' ? '<span class="content-status status-draft">草稿</span>' : c.status === 'scheduled' ? '<span class="content-status status-scheduled">已排期</span>' : '<span class="content-status status-published">已发布</span>';
+    html += '<div class="content-card">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center">'+statusLabel;
+    html += '<div style="display:flex;gap:4px">';
+    if(c.status !== 'published') html += '<button class="btn btn-success btn-sm" style="background:var(--c-success)" onclick="publishContent(\''+c.id+'\')">标记已发布</button>';
+    html += '<button class="btn btn-ghost btn-sm" onclick="deleteContent(\''+c.id+'\')">删除</button>';
+    html += '</div></div>';
+    html += '<div class="content-title">'+escHtml(c.recommendedTitle)+'</div>';
+    if(c.publishDate){ html += '<div style="font-size:12px;color:var(--c-text-light);margin-bottom:4px">计划发布：'+c.publishDate+' '+c.publishTime+'</div>'; }
+
+    // Titles
+    html += '<div class="content-section"><div class="content-section-title"><svg viewBox="0 0 24 24" fill="none"><path d="M7 8h10M7 12h6m-6 4h8M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>3个标题备选</div>';
+    c.titles.forEach(function(t, i){
+      var isRec = (t === c.recommendedTitle);
+      html += '<div class="title-option '+(isRec?'recommended':'')+'"><span class="badge '+(isRec?'rec':'alt')+'">'+(isRec?'推荐':'备选')+'</span><span>'+escHtml(t)+'</span></div>';
+    });
+    html += '</div>';
+
+    // Body
+    html += '<div class="content-section"><div class="content-section-title"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>完整正文</div>';
+    html += '<div class="content-body">'+escHtml(c.body)+'</div></div>';
+
+    // Cover
+    html += '<div class="content-section"><div class="content-section-title"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="9" r="2" stroke="currentColor" stroke-width="2"/><path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>封面文案</div>';
+    html += '<div style="background:var(--c-primary-light);padding:12px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;text-align:center;line-height:1.8;color:var(--c-primary)">'+escHtml(c.coverCopy)+'</div></div>';
+
+    // Image plan
+    html += '<div class="content-section"><div class="content-section-title"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M9 3v18" stroke="currentColor" stroke-width="2"/></svg>配图计划（'+c.imageCount+'张）</div>';
+    html += '<div class="image-plan">';
+    c.imagePlan.forEach(function(img, i){
+      html += '<div class="image-item"><span class="image-num">'+(i+1)+'</span><span>'+escHtml(img)+'</span></div>';
+    });
+    html += '</div></div>';
+
+    // Comment questions
+    html += '<div class="content-section"><div class="content-section-title"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 20l1.3-3.9A7.96 7.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>评论区互动问题</div>';
+    c.commentQuestions.forEach(function(q){
+      html += '<div style="font-size:13px;padding:6px 10px;background:var(--c-bg);border-radius:var(--radius-sm);margin-bottom:4px">'+escHtml(q)+'</div>';
+    });
+    html += '</div>';
+
+    // Tags
+    html += '<div class="content-section"><div class="content-section-title"><svg viewBox="0 0 24 24" fill="none"><path d="M7 7h.01M7 3h5a2 2 0 011.41.59l8 8a2 2 0 010 2.82l-5 5a2 2 0 01-2.82 0l-8-8A2 2 0 013 10V5a2 2 0 012-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>相关标签</div>';
+    html += '<div class="content-tags">';
+    c.tags.forEach(function(t){ html += '<span class="tag">#'+escHtml(t)+'</span>'; });
+    html += '</div></div>';
+
+    html += '</div>';
+  });
+  document.getElementById('contentList').innerHTML = html;
+}
+
+function openContentGenModal(){
+  var select = document.getElementById('genTopicSelect');
+  var selectedTopics = state.topics.filter(function(t){ return t.status === 'selected' && !checkPublished(t.title); });
+  if(selectedTopics.length === 0){
+    selectedTopics = state.topics.filter(function(t){ return !checkPublished(t.title); });
+  }
+  if(selectedTopics.length === 0){
+    showToast('没有可用的选题，请先添加选题');
+    return;
+  }
+  select.innerHTML = selectedTopics.map(function(t){ return '<option value="'+t.id+'">'+escHtml(t.title)+'</option>'; }).join('');
+  document.getElementById('genPublishDate').value = dateOffset(1);
+  openModal('modalContentGen');
+}
+
+function genContentFromTopic(topicId){
+  var select = document.getElementById('genTopicSelect');
+  var topic = state.topics.find(function(t){ return t.id === topicId; });
+  if(!topic){ return; }
+  openContentGenModal();
+  // Set the select to this topic
+  setTimeout(function(){
+    var sel = document.getElementById('genTopicSelect');
+    for(var i=0; i<sel.options.length; i++){
+      if(sel.options[i].value === topicId) sel.selectedIndex = i;
+    }
+  }, 50);
+}
+
+function generateContent(){
+  var topicId = document.getElementById('genTopicSelect').value;
+  var topic = state.topics.find(function(t){ return t.id === topicId; });
+  if(!topic){ showToast('请选择选题'); return; }
+  var publishDate = document.getElementById('genPublishDate').value;
+  var publishTime = document.getElementById('genPublishTime').value;
+
+  var generated = generateContentForTopic(topic, publishDate, publishTime);
+  state.content.push(generated);
+  saveData(KEYS.content, state.content);
+  closeModal('modalContentGen');
+  renderContent();
+  renderToday();
+  showToast('内容已生成');
+}
+
+function generateContentForTopic(topic, publishDate, publishTime){
+  var cat = topic.category;
+  var title = topic.title;
+  var desc = topic.desc || '';
+
+  // Generate 3 titles based on category
+  var titleTemplates = {
+    emo: [
+      'INFJ才知道的内耗：'+extractTopic(title),
+      '深夜躺床上想了想，'+extractTopic(title),
+      '我家猫用行动告诉我，'+extractTopic(title)
+    ],
+    infj: [
+      '作为一个INFJ，我想聊聊'+extractTopic(title),
+      'INFJ的必修课：'+extractTopic(title),
+      '养猫后我更懂了，'+extractTopic(title)
+    ],
+    cat: [
+      '我家猫教我的事：'+extractTopic(title),
+      '养猫后才明白的'+extractTopic(title),
+      '猫咪视角的'+extractTopic(title)
+    ],
+    psych: [
+      '心理学小课：'+extractTopic(title),
+      '用一个心理学概念解释'+extractTopic(title),
+      'INFJ+心理学：'+extractTopic(title)
+    ],
+    hot: [
+      'INFJ如何看待'+extractTopic(title),
+      '关于'+extractTopic(title)+'，我想说几句',
+      '从心理学角度看'+extractTopic(title)
+    ]
+  };
+  var templates = titleTemplates[cat] || titleTemplates.emo;
+  var titles = templates.slice(0, 3);
+  var recommendedTitle = titles[0];
+
+  // Generate body
+  var body = generateBody(topic, cat);
+
+  // Cover copy
+  var coverTemplates = {
+    emo: extractTopic(title)+'\n不是矫情\n是INFJ的社交电池没电了',
+    infj: 'INFJ才知道的事\n'+extractTopic(title),
+    cat: '我家猫教我的\n'+extractTopic(title),
+    psych: '心理学告诉你\n'+extractTopic(title),
+    hot: 'INFJ视角\n'+extractTopic(title)
+  };
+  var coverCopy = coverTemplates[cat] || coverTemplates.emo;
+
+  // Image plan
+  var imagePlan = generateImagePlan(cat, title);
+
+  // Comment questions
+  var commentQuestions = generateCommentQuestions(cat, title);
+
+  // Tags
+  var baseTags = ['INFJ','INFJ人格','情绪管理','自我成长','猫咪治愈','心理学'];
+  var catTags = {
+    emo: ['内耗','情绪','社交电池','情绪自救'],
+    infj: ['INFJ','内向者','人格类型','Ni功能'],
+    cat: ['养猫日常','猫咪','宠物治愈','猫奴'],
+    psych: ['心理学','心理知识','情绪科学','脑科学'],
+    hot: ['社会热点','年轻人','社交','情绪话题']
+  };
+  var tags = baseTags.concat(catTags[cat] || []).slice(0, 10);
+
+  // Publish time recommendation
+  var timeRec = {
+    emo: '20:00',
+    infj: '19:00',
+    cat: '10:00',
+    psych: '19:00',
+    hot: '12:00'
+  };
+  var finalTime = publishTime || timeRec[cat] || '20:00';
+
+  return {
+    id: 'c' + Date.now(),
+    topicId: topic.id,
+    topicTitle: topic.title,
+    titles: titles,
+    recommendedTitle: recommendedTitle,
+    body: body,
+    coverCopy: coverCopy,
+    imageCount: imagePlan.length,
+    imagePlan: imagePlan,
+    commentQuestions: commentQuestions,
+    tags: tags,
+    publishTime: finalTime,
+    publishDate: publishDate,
+    status: 'draft',
+    createdAt: todayStr()
+  };
+}
+
+function extractTopic(title){
+  // Try to extract the core topic from the title
+  var cleaned = title.replace(/^(INFJ|心理学|我家猫|养猫后|作为一个INFJ|深夜|关于|从.*角度)[的：]/i, '');
+  cleaned = cleaned.replace(/^（.*?）/, '');
+  if(cleaned.length > 20) cleaned = cleaned.substring(0, 20);
+  return cleaned.trim() || title;
+}
+
+function generateBody(topic, cat){
+  var t = extractTopic(topic.title);
+  var bodies = {
+    emo: '又是一个人待着的夜晚。\n猫跳上膝盖，踩了两下，趴下了。\n我摸着它的背，突然想通了一件事——\n\n'+t+'，\n不是我一个人的问题。\n\n心理学里有个概念叫"社交电池"，\n每个人的电量不同。\n外向者像大容量充电宝，\n内向者——尤其是INFJ——\n可能只有普通电池的容量。\n\n社交两小时，恢复一整天。\n这不是矫情，是大脑的工作方式不同。\n\n我家猫就是个很好的参照。\n它不会对所有人都热情，\n只在它觉得安全的人面前翻肚皮。\n社交完了，它会找个角落待一会儿。\n充电满了，又是那条好猫。\n\nINFJ也是。\n我们需要的不是更多的社交，\n而是"恰到好处的社交距离"。\n\n所以——\n别再逼自己"多出去走走"了。\n接纳自己的社交电池容量，\n找到自己的充电方式。\n\n就像我家猫一样：\n社交完，躲一会儿，\n充好电，再出发。\n\n你是INFJ吗？\n你的社交电池能撑多久？',
+    infj: '作为一个INFJ，我想聊聊'+t+'。\n\n昨晚又熬夜了。\n不是不困，是脑子停不下来。\n猫在脚边睡得四仰八叉，\n我盯着天花板，想东想西。\n\nINFJ的脑子里有一台永远在运转的处理器。\n别人看到的是"你想太多了"，\n我们看到的是——所有可能性。\n\n这其实是MBTI里说的Ni（内倾直觉）功能。\nINFJ的大脑会自动收集信息，\n在后台运行，然后突然给出一个"顿悟"。\n\n但问题是——\n它不停机。\n\n我家猫教会我一件事：\n它想玩的时候就疯玩，\n不想动的时候就摊成液体。\n它不会在"该休息的时候"还焦虑。\n\nINFJ需要学的就是这个：\n给大脑一个"关机仪式"。\n\n我的方法是：\n1. 睡前15分钟，只摸猫\n2. 把脑子里的想法写在纸上（倒出来）\n3. 告诉自己：明天再想\n\n如果你也是INFJ，\n试试给自己的大脑一个关机时间。\n\n你觉得INFJ最容易在什么时候内耗？',
+    cat: '我家猫又做了一件让我悟了的事。\n\n今天说'+t+'。\n\n早上醒来，猫坐在枕边看着我。\n不叫，不闹，就那么静静地看着。\n我伸手摸了摸它，\n它发出一声很轻的"嗯"，\n然后继续趴着。\n\n我突然觉得——\n这大概就是最好的陪伴方式。\n不用说话，不用互动，\n知道对方在就好。\n\n心理学里管这叫"安全型依恋"。\n猫咪对你的信任是：\n你在，我就安心。\n你不在，我也能自己待着。\n\n这不就是INFJ最渴望的关系吗？\n不是黏在一起，\n而是各自舒服，知道对方在。\n\n我家猫教会我的情绪管理课：\n1. 不需要时刻回应别人\n2. 独处不是孤独，是充电\n3. 安静的陪伴比热闹更有力量\n\n养猫之后，我确实变了。\n不那么焦虑了，不那么急了。\n可能是因为——\n有个小生命教会我，\n慢慢来，也没关系。\n\n你家猫有没有教会你什么？',
+    psych: '今天用一个心理学概念，解释'+t+'。\n\n先说个场景：\n上周加班到很晚，回家路上特别烦躁。\n进门的时候，猫冲我喵了一声。\n那一刻，心情突然好了一点。\n\n这不是错觉。\n心理学里有个概念叫"心理缓冲"——\n在面对压力源和反应之间，\n如果有一个缓冲物（人、动物、环境），\n我们的情绪反应会温和很多。\n\n猫咪就是最天然的"情绪缓冲器"。\n它的存在本身，就在帮你调节。\n\n对INFJ来说更重要——\nINFJ的情绪感知力是所有类型里最强的。\n好处是共情能力强，\n坏处是——容易吸收别人的情绪，\n变成自己的内耗。\n\n所以INFJ需要一个"缓冲带"。\n对我来说，是猫。\n对别人来说，可能是运动、音乐、写日记。\n\n关键不是用什么方法，\n而是——你要有一个。\n\n你家猫（或者你的缓冲带）是什么？',
+    hot: '最近看到一个话题：'+t+'。\n\n作为INFJ，我想说说我的看法。\n\n先说我家猫。\n它对来家里的客人态度分两种：\n一种是"我不认识你，别碰我"，躲起来。\n一种是"嗯，你好像还行"，远远看着。\n\n它不会对所有人都热情，\n也不会对所有人都冷漠。\n它有自己的判断标准。\n\n这跟'+t+'有什么关系？\n\n关系大了。\n\n年轻人不是不想社交，\n是开始学会"选择性社交"了。\n就像我的猫一样——\n与其跟所有人维持表面关系，\n不如跟几个人建立真正的连接。\n\n心理学里叫"社交质量优于社交数量"。\nINFJ可能比其他类型更早明白这一点。\n我们的社交电池有限，\n必须用在值得的人身上。\n\n所以——\n如果你也在经历'+t+'，\n别觉得是自己的问题。\n也许是你在学会一种更健康的社交方式。\n\n你的社交方式更像猫还是像狗？'
+  };
+  return bodies[cat] || bodies.emo;
+}
+
+function generateImagePlan(cat, title){
+  var t = extractTopic(title);
+  var plans = {
+    emo: [
+      '封面：标题文字 + 深夜独处场景插画 + 猫咪剪影',
+      '场景图：社交后疲惫回家瘫在沙发上（真实生活照）',
+      '猫咪图：猫趴在腿上的特写（类比"充电中"状态）',
+      '知识卡：社交电池概念图解（白底文字卡片）',
+      '对比图：外向者vs内向者能量消耗曲线（手绘风图表）',
+      '金句卡："社交完，躲一会儿，充电满了，再出发"'
+    ],
+    infj: [
+      '封面：INFJ + 标题关键词 + 紫色系背景',
+      '场景图：深夜躺在床上看天花板的视角',
+      '猫咪图：猫四仰八叉睡觉的照片（"关机"状态）',
+      '知识卡：MBTI Ni功能简要图解',
+      '方法卡：INFJ大脑关机仪式三步法',
+      '金句卡："给大脑一个关机时间"'
+    ],
+    cat: [
+      '封面：猫咪大头照 + 标题文字',
+      '猫咪图：早上醒来猫在枕边看你的照片',
+      '场景图：人猫安静共处的画面',
+      '知识卡：安全型依恋概念（文字卡片）',
+      '清单卡：猫教我的3个情绪管理课',
+      '金句卡："慢慢来，也没关系"'
+    ],
+    psych: [
+      '封面：脑科学插画 + 标题文字',
+      '场景图：加班回家疲惫的真实画面',
+      '猫咪图：猫在门口迎接的照片',
+      '知识卡：心理缓冲概念图解',
+      '分析卡：INFJ情绪感知力的双刃剑',
+      '金句卡："你需要一个情绪缓冲带"'
+    ],
+    hot: [
+      '封面：热点话题关键词 + INFJ视角标签',
+      '猫咪图：猫选择性接近客人的照片',
+      '对比图：猫的社交方式 vs 人的社交方式',
+      '知识卡：社交质量优于社交数量',
+      '观点卡：INFJ的社交电池理论',
+      '金句卡："选择性社交，不是社交退缩"'
+    ]
+  };
+  return plans[cat] || plans.emo;
+}
+
+function generateCommentQuestions(cat, title){
+  var t = extractTopic(title);
+  var questions = {
+    emo: ['你是INFJ吗？社交后你会做什么恢复？','你的社交电池大概能撑多久？','你觉得养猫对情绪有帮助吗？'],
+    infj: ['INFJ的你觉得什么时候最容易内耗？','你有什么给大脑"关机"的方法吗？','你家猫晚上会陪你熬夜吗？'],
+    cat: ['你家猫教会了你什么？','你觉得猫咪对情绪管理有帮助吗？','你养猫之后性格有变化吗？'],
+    psych: ['你有什么"情绪缓冲带"？','你觉得INFJ最大的情绪挑战是什么？','你家猫在什么时候最能治愈你？'],
+    hot: ['你的社交方式更像猫还是像狗？','你觉得"选择性社交"算社交退缩吗？','INFJ的你平时怎么管理社交能量？']
+  };
+  return questions[cat] || questions.emo;
+}
+
+function publishContent(id){
+  var c = state.content.find(function(x){ return x.id === id; });
+  if(!c) return;
+  c.status = 'published';
+  saveData(KEYS.content, state.content);
+  // Add to published list
+  if(state.published.indexOf(c.topicTitle) === -1){
+    state.published.push(c.topicTitle);
+    saveData(KEYS.published, state.published);
+  }
+  // Update topic status
+  state.topics.forEach(function(t){
+    if(t.id === c.topicId) t.status = 'published';
+  });
+  saveData(KEYS.topics, state.topics);
+  renderContent();
+  renderTopics();
+  renderPublished();
+  renderToday();
+  showToast('已标记为已发布');
+}
+
+function deleteContent(id){
+  showConfirm('删除内容', '确定删除这篇内容吗？', function(){
+    state.content = state.content.filter(function(c){ return c.id !== id; });
+    saveData(KEYS.content, state.content);
+    renderContent();
+    renderToday();
+  });
+}
+
+/* =========================================================
+   RENDER: DATA (Module D)
+========================================================= */
+function renderData(){
+  var html = '';
+  state.data.forEach(function(d){
+    html += '<tr>';
+    html += '<td>'+d.date+'</td>';
+    html += '<td>'+d.time+'</td>';
+    html += '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">'+escHtml(d.title)+'</td>';
+    html += '<td>'+d.type+'</td>';
+    html += '<td class="'+metricClass(d.reads)+'">'+d.reads+'</td>';
+    html += '<td class="'+metricClass(d.likes)+'">'+d.likes+'</td>';
+    html += '<td class="'+metricClass(d.saves)+'">'+d.saves+'</td>';
+    html += '<td>'+d.comments+'</td>';
+    html += '<td>'+d.shares+'</td>';
+    html += '<td class="'+metricClass(d.follow)+'">'+(d.follow>0?'+'+d.follow:'-')+'</td>';
+    html += '<td><button class="btn btn-ghost btn-sm" onclick="deleteData(\''+d.id+'\')">删</button></td>';
+    html += '</tr>';
+  });
+  document.getElementById('dataTableBody').innerHTML = html;
+  document.getElementById('badgeData').textContent = state.data.length;
+  document.getElementById('badgeData').style.display = state.data.length > 0 ? '' : 'none';
+}
+
+function metricClass(val){
+  if(val >= 1000) return 'metric-good';
+  if(val >= 300) return 'metric-mid';
+  return 'metric-low';
+}
+
+function openDataModal(){
+  document.getElementById('dataDate').value = todayStr();
+  document.getElementById('dataTime').value = '20:00';
+  document.getElementById('dataTitle').value = '';
+  document.getElementById('dataType').value = '情绪/内耗';
+  document.getElementById('dataRead').value = 0;
+  document.getElementById('dataLike').value = 0;
+  document.getElementById('dataSave').value = 0;
+  document.getElementById('dataComment').value = 0;
+  document.getElementById('dataShare').value = 0;
+  document.getElementById('dataFollow').value = 0;
+  openModal('modalData');
+}
+
+function addDataRecord(){
+  var title = document.getElementById('dataTitle').value.trim();
+  if(!title){ showToast('请输入标题'); return; }
+  var record = {
+    id: 'd' + Date.now(),
+    date: document.getElementById('dataDate').value,
+    time: document.getElementById('dataTime').value,
+    title: title,
+    type: document.getElementById('dataType').value,
+    reads: parseInt(document.getElementById('dataRead').value) || 0,
+    likes: parseInt(document.getElementById('dataLike').value) || 0,
+    saves: parseInt(document.getElementById('dataSave').value) || 0,
+    comments: parseInt(document.getElementById('dataComment').value) || 0,
+    shares: parseInt(document.getElementById('dataShare').value) || 0,
+    follow: parseInt(document.getElementById('dataFollow').value) || 0
+  };
+  state.data.push(record);
+  saveData(KEYS.data, state.data);
+  closeModal('modalData');
+  renderData();
+  renderDataAnalysis();
+  renderToday();
+}
+
+function deleteData(id){
+  showConfirm('删除记录', '确定删除这条数据记录吗？', function(){
+    state.data = state.data.filter(function(d){ return d.id !== id; });
+    saveData(KEYS.data, state.data);
+    renderData();
+    renderDataAnalysis();
+    renderToday();
+  });
+}
+
+function renderDataAnalysis(){
+  if(state.data.length === 0){
+    document.getElementById('dataAnalysis').innerHTML = '';
+    document.getElementById('dataSummary').innerHTML = '';
+    document.getElementById('dataCharts').innerHTML = '';
+    return;
+  }
+
+  // Summary cards
+  var totalReads = sum(state.data, 'reads');
+  var totalLikes = sum(state.data, 'likes');
+  var totalSaves = sum(state.data, 'saves');
+  var totalFollow = sum(state.data, 'follow');
+  var avgReads = Math.round(totalReads / state.data.length);
+
+  var summaryHtml = '<div class="data-summary">';
+  summaryHtml += '<div class="summary-card"><div class="summary-val">'+totalReads.toLocaleString()+'</div><div class="summary-label">总阅读</div></div>';
+  summaryHtml += '<div class="summary-card"><div class="summary-val">'+totalLikes.toLocaleString()+'</div><div class="summary-label">总点赞</div></div>';
+  summaryHtml += '<div class="summary-card"><div class="summary-val">'+totalSaves.toLocaleString()+'</div><div class="summary-label">总收藏</div></div>';
+  summaryHtml += '<div class="summary-card"><div class="summary-val">+'+totalFollow+'</div><div class="summary-label">总涨粉</div></div>';
+  summaryHtml += '<div class="summary-card"><div class="summary-val">'+avgReads.toLocaleString()+'</div><div class="summary-label">平均阅读</div></div>';
+  summaryHtml += '<div class="summary-card"><div class="summary-val">'+state.data.length+'</div><div class="summary-label">总篇数</div></div>';
+  summaryHtml += '</div>';
+  document.getElementById('dataSummary').innerHTML = summaryHtml;
+
+  // Analysis
+  var analysis = analyzeData();
+  var analysisHtml = '<div class="card"><div class="card-title" style="margin-bottom:10px">每周分析</div>';
+  analysis.forEach(function(a){
+    analysisHtml += '<div class="analysis-item"><svg viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div>'+a+'</div></div>';
+  });
+  analysisHtml += '</div>';
+  document.getElementById('dataAnalysis').innerHTML = analysisHtml;
+
+  // Charts
+  var chartsHtml = '';
+  // Bar chart: reads by type
+  chartsHtml += '<div class="chart-wrap"><div class="chart-title">各类型平均阅读量</div>';
+  chartsHtml += renderBarChart(analysis._typeData || []);
+  chartsHtml += '</div>';
+  // Line chart: follower growth
+  chartsHtml += '<div class="chart-wrap"><div class="chart-title">涨粉趋势</div>';
+  chartsHtml += renderLineChart(state.data);
+  chartsHtml += '</div>';
+  // Pie chart: content type distribution
+  chartsHtml += '<div class="chart-wrap"><div class="chart-title">内容类型分布</div>';
+  chartsHtml += renderPieChart(state.data);
+  chartsHtml += '</div>';
+  document.getElementById('dataCharts').innerHTML = chartsHtml;
+}
+
+function analyzeData(){
+  var results = [];
+  if(state.data.length === 0) return results;
+
+  // Best type
+  var typeStats = {};
+  state.data.forEach(function(d){
+    if(!typeStats[d.type]) typeStats[d.type] = {count:0, reads:0, likes:0, saves:0, follow:0};
+    typeStats[d.type].count++;
+    typeStats[d.type].reads += d.reads;
+    typeStats[d.type].likes += d.likes;
+    typeStats[d.type].saves += d.saves;
+    typeStats[d.type].follow += d.follow;
+  });
+  var typeData = [];
+  var bestType = null, bestAvgReads = 0;
+  for(var type in typeStats){
+    var s = typeStats[type];
+    var avgReads = Math.round(s.reads / s.count);
+    typeData.push({label:type, value:avgReads, count:s.count});
+    if(avgReads > bestAvgReads){ bestAvgReads = avgReads; bestType = type; }
+  }
+  results.push('<strong>最有效的选题类型：</strong>'+bestType+'（平均阅读'+bestAvgReads.toLocaleString()+'）');
+  typeData.sort(function(a,b){ return b.value - a.value; });
+  results._typeData = typeData;
+
+  // Best time
+  var timeStats = {};
+  state.data.forEach(function(d){
+    var hour = d.time.split(':')[0] + ':00';
+    if(!timeStats[hour]) timeStats[hour] = {count:0, reads:0};
+    timeStats[hour].count++;
+    timeStats[hour].reads += d.reads;
+  });
+  var bestTime = null, bestTimeAvg = 0;
+  for(var time in timeStats){
+    var avg = Math.round(timeStats[time].reads / timeStats[time].count);
+    if(avg > bestTimeAvg){ bestTimeAvg = avg; bestTime = time; }
+  }
+  results.push('<strong>最佳发布时间：</strong>'+bestTime+'（平均阅读'+bestTimeAvg.toLocaleString()+'）');
+
+  // Best title pattern
+  var bestPost = state.data.slice().sort(function(a,b){ return b.reads - a.reads; })[0];
+  results.push('<strong>最高阅读笔记：</strong>「'+bestPost.title+'」('+bestPost.reads.toLocaleString()+'阅读)');
+  results.push('<strong>涨粉最多的类型：</strong>'+getBestFollowType(typeStats));
+
+  // Save rate
+  var totalSaves = sum(state.data, 'saves');
+  var totalLikes = sum(state.data, 'likes');
+  var saveRate = totalLikes > 0 ? Math.round(totalSaves / totalLikes * 100) : 0;
+  results.push('<strong>收藏/点赞比：</strong>'+saveRate+'%（'+(saveRate>50?'高收藏率，内容实用性强':saveRate>30?'收藏率正常':'偏传播型内容')+'）');
+
+  // Recommendation
+  results.push('<strong>下周建议：</strong>多做'+bestType+'类内容，在'+bestTime+'时段发布');
+
+  return results;
+}
+
+function getBestFollowType(typeStats){
+  var bestType = null, bestFollow = 0;
+  for(var type in typeStats){
+    if(typeStats[type].follow > bestFollow){ bestFollow = typeStats[type].follow; bestType = type; }
+  }
+  return bestType + '（累计涨粉'+bestFollow+'）';
+}
+
+function sum(arr, key){ return arr.reduce(function(s, x){ return s + (x[key]||0); }, 0); }
+
+/* ===== SVG Charts ===== */
+function renderBarChart(data){
+  if(!data || data.length === 0) return '<p style="font-size:13px;color:var(--c-text-light);text-align:center;padding:12px">暂无数据</p>';
+  var maxVal = Math.max.apply(null, data.map(function(d){ return d.value; }));
+  var barWidth = 50, gap = 20, chartHeight = 160, labelY = 180;
+  var width = data.length * (barWidth + gap) + 40;
+  var colors = ['#E8654E','#6C5CE7','#00B894','#FDCB6E','#E74C3C','#74B9FF'];
+  var svg = '<svg viewBox="0 0 '+width+' '+labelY+'" width="100%" style="max-width:400px;display:block;margin:0 auto">';
+  data.forEach(function(d, i){
+    var h = maxVal > 0 ? (d.value / maxVal) * chartHeight : 0;
+    var x = 20 + i * (barWidth + gap);
+    var y = chartHeight - h;
+    svg += '<rect x="'+x+'" y="'+y+'" width="'+barWidth+'" height="'+h+'" fill="'+colors[i%colors.length]+'" rx="4"/>';
+    svg += '<text x="'+(x+barWidth/2)+'" y="'+(y-6)+''+'" text-anchor="middle" font-size="10" fill="#636E72" font-weight="600">'+d.value.toLocaleString()+'</text>';
+    svg += '<text x="'+(x+barWidth/2)+'" y="'+(labelY-2)+''+'" text-anchor="middle" font-size="10" fill="#B2BEC3">'+d.label+'</text>';
+  });
+  svg += '</svg>';
+  return svg;
+}
+
+function renderLineChart(data){
+  if(data.length === 0) return '<p style="font-size:13px;color:var(--c-text-light);text-align:center;padding:12px">暂无数据</p>';
+  var sorted = data.slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
+  var maxFollow = Math.max.apply(null, sorted.map(function(d){ return d.follow; }));
+  var w = 320, h = 140, padX = 30, padY = 20;
+  var stepX = sorted.length > 1 ? (w - padX*2) / (sorted.length - 1) : 0;
+  var points = sorted.map(function(d, i){
+    var x = padX + i * stepX;
+    var y = h - padY - (maxFollow > 0 ? (d.follow / maxFollow) * (h - padY*2) : 0);
+    return {x:x, y:y, val:d.follow, date:d.date};
+  });
+  var svg = '<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="max-width:320px;display:block;margin:0 auto">';
+  // Grid lines
+  for(var i=0; i<=3; i++){
+    var gy = padY + i * ((h - padY*2)/3);
+    svg += '<line x1="'+padX+'" y1="'+gy+'" x2="'+(w-padX)+'" y2="'+gy+'" stroke="#F0F3F5" stroke-width="1"/>';
+  }
+  // Line
+  if(points.length > 1){
+    var pathD = points.map(function(p){ return p.x+','+p.y; }).join(' ');
+    svg += '<polyline points="'+pathD+'" fill="none" stroke="#E8654E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    // Area
+    var areaD = pathD + ' '+(w-padX)+','+(h-padY)+' '+padX+','+(h-padY);
+    svg += '<polygon points="'+areaD+'" fill="#E8654E" opacity="0.08"/>';
+  }
+  // Points
+  points.forEach(function(p){
+    svg += '<circle cx="'+p.x+'" cy="'+p.y+'" r="3" fill="#E8654E"/>';
+    svg += '<text x="'+p.x+'" y="'+(p.y-8)+''+'" text-anchor="middle" font-size="9" fill="#636E72" font-weight="600">+'+p.val+'</text>';
+  });
+  svg += '</svg>';
+  return svg;
+}
+
+function renderPieChart(data){
+  if(data.length === 0) return '<p style="font-size:13px;color:var(--c-text-light);text-align:center;padding:12px">暂无数据</p>';
+  var typeCount = {};
+  data.forEach(function(d){ typeCount[d.type] = (typeCount[d.type]||0) + 1; });
+  var total = data.length;
+  var entries = Object.keys(typeCount).map(function(k){ return {label:k, count:typeCount[k]}; });
+  var colors = ['#E8654E','#6C5CE7','#00B894','#FDCB6E','#E74C3C','#74B9FF'];
+  var cx = 80, cy = 80, r = 60;
+  var svg = '<svg viewBox="0 0 250 160" width="100%" style="max-width:300px;display:block;margin:0 auto">';
+  var startAngle = -Math.PI/2;
+  entries.forEach(function(e, i){
+    var angle = (e.count / total) * Math.PI * 2;
+    var endAngle = startAngle + angle;
+    var x1 = cx + r * Math.cos(startAngle), y1 = cy + r * Math.sin(startAngle);
+    var x2 = cx + r * Math.cos(endAngle), y2 = cy + r * Math.sin(endAngle);
+    var largeArc = angle > Math.PI ? 1 : 0;
+    svg += '<path d="M'+cx+','+cy+' L'+x1+','+y1+' A'+r+','+r+' 0 '+largeArc+' 1 '+x2+','+y2+' Z" fill="'+colors[i%colors.length]+'"/>';
+    startAngle = endAngle;
+  });
+  // Legend
+  entries.forEach(function(e, i){
+    var ly = 20 + i * 20;
+    svg += '<rect x="160" y="'+ly+'" width="12" height="12" fill="'+colors[i%colors.length]+'" rx="2"/>';
+    svg += '<text x="178" y="'+(ly+10)+''+'" font-size="11" fill="#636E72">'+e.label+' ('+e.count+')</text>';
+  });
+  svg += '</svg>';
+  return svg;
+}
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+function renderSettings(){
+  var a = state.account || {};
+  document.getElementById('setPersonality').value = a.personality || 'INFJ';
+  document.getElementById('setCoreTopics').value = a.coreTopics || '';
+  document.getElementById('setElements').value = a.elements || '';
+  document.getElementById('setStyle').value = a.style || '';
+  document.getElementById('setAudience').value = a.audience || '';
+  document.getElementById('setAvoid').value = a.avoid || '';
+
+  // Tags
+  var tagsHtml = '';
+  (a.tags || ['INFJ','情绪','内耗','关系','自我成长','猫咪','心理学']).forEach(function(t){
+    tagsHtml += '<span class="account-tag" style="background:var(--c-secondary-light);color:var(--c-secondary)">'+escHtml(t)+'</span>';
+  });
+  document.getElementById('setTags').innerHTML = tagsHtml;
+
+  // Preview
+  var preview = '<strong>账号定位概览：</strong><br>';
+  preview += '人格类型：'+(a.personality||'INFJ')+'<br>';
+  preview += '核心话题：'+(a.coreTopics||'未设置')+'<br>';
+  preview += '内容元素：'+(a.elements||'未设置')+'<br>';
+  preview += '风格定位：'+(a.style||'未设置')+'<br>';
+  preview += '目标受众：'+(a.audience||'未设置')+'<br>';
+  preview += '避免事项：'+(a.avoid||'未设置');
+  document.getElementById('accountPreview').innerHTML = preview;
+}
+
+function saveSettings(){
+  var account = {
+    personality: document.getElementById('setPersonality').value.trim() || 'INFJ',
+    tags: state.account ? state.account.tags : ['INFJ','情绪','内耗','关系','自我成长','猫咪','心理学'],
+    coreTopics: document.getElementById('setCoreTopics').value.trim(),
+    elements: document.getElementById('setElements').value.trim(),
+    style: document.getElementById('setStyle').value.trim(),
+    audience: document.getElementById('setAudience').value.trim(),
+    avoid: document.getElementById('setAvoid').value.trim()
+  };
+  state.account = account;
+  saveData(KEYS.account, account);
+  renderSettings();
+  showToast('账号定位已保存');
+}
+
+function renderPublished(){
+  var html = '';
+  if(state.published.length === 0){
+    html = '<div style="font-size:13px;color:var(--c-text-light);padding:8px 0">暂无已发布记录</div>';
+  } else {
+    state.published.forEach(function(t, i){
+      html += '<div style="font-size:13px;padding:6px 10px;background:var(--c-bg);border-radius:var(--radius-sm);margin-bottom:4px;display:flex;align-items:center;gap:6px">';
+      html += '<svg viewBox="0 0 24 24" fill="none" width="14" height="14" style="color:var(--c-success);flex-shrink:0"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      html += '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(t)+'</span>';
+      html += '</div>';
+    });
+  }
+  document.getElementById('publishedList').innerHTML = html;
+}
+
+function checkPublished(title){
+  return state.published.some(function(p){
+    return p === title || title.indexOf(p) >= 0 || p.indexOf(title) >= 0;
+  });
+}
+
+/* =========================================================
+   EXPORT / IMPORT / CLEAR
+========================================================= */
+function exportJSON(){
+  var allData = {
+    account: state.account,
+    topics: state.topics,
+    hotspots: state.hotspots,
+    content: state.content,
+    data: state.data,
+    published: state.published,
+    exportDate: new Date().toISOString()
+  };
+  var blob = new Blob([JSON.stringify(allData, null, 2)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '小红书内容工作台_备份_'+todayStr()+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('已导出JSON备份');
+}
+
+function importJSON(event){
+  var file = event.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var data = JSON.parse(e.target.result);
+      if(data.account){ state.account = data.account; saveData(KEYS.account, data.account); }
+      if(data.topics){ state.topics = data.topics; saveData(KEYS.topics, data.topics); }
+      if(data.hotspots){ state.hotspots = data.hotspots; saveData(KEYS.hotspots, data.hotspots); }
+      if(data.content){ state.content = data.content; saveData(KEYS.content, data.content); }
+      if(data.data){ state.data = data.data; saveData(KEYS.data, data.data); }
+      if(data.published){ state.published = data.published; saveData(KEYS.published, data.published); }
+      renderAll();
+      showToast('数据导入成功');
+    }catch(err){
+      showToast('导入失败：文件格式错误');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function exportCSV(){
+  if(state.data.length === 0){ showToast('暂无数据可导出'); return; }
+  var headers = ['日期','时间','标题','类型','阅读','点赞','收藏','评论','分享','涨粉'];
+  var rows = state.data.map(function(d){
+    return [d.date, d.time, '"'+d.title.replace(/"/g,'""')+'"', d.type, d.reads, d.likes, d.saves, d.comments, d.shares, d.follow].join(',');
+  });
+  var csv = '\uFEFF' + headers.join(',') + '\n' + rows.join('\n');
+  var blob = new Blob([csv], {type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '内容数据_'+todayStr()+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV已导出');
+}
+
+function confirmClear(){
+  showConfirm('清空全部数据', '此操作将删除所有选题、热点、内容、数据和已发布记录，且不可恢复。建议先导出备份。', function(){
+    localStorage.removeItem(KEYS.topics);
+    localStorage.removeItem(KEYS.hotspots);
+    localStorage.removeItem(KEYS.content);
+    localStorage.removeItem(KEYS.data);
+    localStorage.removeItem(KEYS.published);
+    loadState();
+    renderAll();
+    showToast('已清空全部数据');
+  });
+}
+
+/* =========================================================
+   UTILS
+========================================================= */
+function showConfirm(title, msg, callback){
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  var btn = document.getElementById('confirmBtn');
+  btn.onclick = function(){ callback(); closeModal('modalConfirm'); };
+  openModal('modalConfirm');
+}
+
+function showToast(msg){
+  var toast = document.createElement('div');
+  toast.textContent = msg;
+  toast.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(45,52,54,0.9);color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;z-index:2000;animation:fadeIn .2s';
+  document.body.appendChild(toast);
+  setTimeout(function(){ toast.remove(); }, 2500);
+}
+
+function escHtml(str){
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderAll(){
+  renderToday();
+  renderTopics();
+  renderHotspots();
+  renderContent();
+  renderData();
+  renderDataAnalysis();
+  renderSettings();
+  renderPublished();
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+function init(){
+  seedData();
+  loadState();
+  renderAll();
+}
+
+init();
+</script>
+</body>
+</html>
